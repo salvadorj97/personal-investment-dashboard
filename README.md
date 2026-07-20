@@ -24,16 +24,16 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 ![Patrimonio](screenshots/Patrimonio.png)
 
 ### Portafolio — Stock Performance
-![Portafolio](screenshots/portafolio.png)
+![Portafolio](screenshots/Portafolio.png)
 
 ### Dividendos — Dividend Income
-![Dividendos](screenshots/dividendos.png)
+![Dividendos](screenshots/Dividendos.png)
 
 ### Renta Fija — Fixed Income
-![Renta Fija](screenshots/rentafija.png)
+![Renta Fija](screenshots/Renta Fija.png)
 
 ### Diversificación — Portfolio Composition
-![Diversificacion](screenshots/diversificacion.png)
+![Diversificacion](screenshots/Diversificacion.png)
 
 ### Data Model
 ![Data Model](screenshots/data_model.png)
