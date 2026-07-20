@@ -36,7 +36,7 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 ![Diversificacion](screenshots/Diversificacion.png)
 
 ### Data Model
-![Data Model](screenshots/data_model.png)
+![Data Model](screenshots/DataModel.png)
 
 ---
 
