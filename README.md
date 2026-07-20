@@ -21,7 +21,7 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 ## Screenshots
 
 ### Patrimonio — Total Net Worth
-![Patrimonio](screenshots/patrimonio.png)
+![Patrimonio](screenshots/Patrimonio.png)
 
 ### Portafolio — Stock Performance
 ![Portafolio](screenshots/portafolio.png)
