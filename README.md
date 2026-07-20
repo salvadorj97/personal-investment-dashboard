@@ -30,7 +30,7 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 ![Dividendos](screenshots/Dividendos.png)
 
 ### Renta Fija — Fixed Income
-![Renta Fija](screenshots/Renta Fija.png)
+![Renta Fija](screenshots/RentaFija.png)
 
 ### Diversificación — Portfolio Composition
 ![Diversificacion](screenshots/Diversificacion.png)
