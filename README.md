@@ -211,4 +211,8 @@ This project is documented in detail on Medium:
 
 ---
 
-*Built by [your name] · Feel free to open an issue if you have questions about the data model or DAX measures*
+## Author
+
+**Salvador Jiménez-Juárez**
+Mastrère Spécialisé – Digital Strategy Management, Grenoble École de Management (2025)
+[LinkedIn](https://linkedin.com/in/salvador-jimenez97mx) · [Medium](https://medium.com/@salvador.jimenez-juarez) · Feel free to open an issue if you have questions about the data model or DAX measures*
