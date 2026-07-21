@@ -142,6 +142,56 @@ This dashboard tracks assets in MXN, USD, EUR, and GBP. The approach:
 - The Patrimonio page shows totals in MXN, USD, and EUR using the most recent rate from `Fact_PortfolioSnapshot`
 - Some ETFs trade on both the Mexican market (MXN) and US market (USD) as separate positions — handled with an `AssetKey` column that uniquely identifies each combination (e.g., `VOO_MX` vs `VOO_US`)
 
+### Converting totals to USD and EUR
+
+A card showing the total net worth in USD or EUR sounds simple — but it breaks the moment a slicer filters out assets denominated in those currencies. If no EUR asset is in the current view, the measure can't find an EUR exchange rate and returns blank.
+
+The first attempt used `ALL()` and `CALCULATE` to force the rate lookup:
+
+```dax
+-- ❌ Works sometimes, but breaks with certain slicer combinations
+Patrimonio Total EUR =
+VAR ultimaFecha =
+    CALCULATE(
+        MAX(Fact_PortfolioSnapshot[SnapshotDate]),
+        ALL(Fact_PortfolioSnapshot)
+    )
+VAR fx =
+    CALCULATE(
+        AVERAGE(Fact_PortfolioSnapshot[FXRate_to_MXN]),
+        ALL(Fact_PortfolioSnapshot),
+        Fact_PortfolioSnapshot[Currency] = "EUR",
+        Fact_PortfolioSnapshot[SnapshotDate] = ultimaFecha
+    )
+RETURN DIVIDE([Snapshot Último Mes], fx)
+```
+
+The cleaner solution was to store the exchange rate lookup as a simple measure in `Dim_FXRates`, which sits completely outside the slicer context:
+
+```dax
+-- ✅ In Dim_FXRates — always finds the rate regardless of active filters
+EUR Rate =
+CALCULATE(
+    MAX(Dim_FXRates[RateToMXN]),
+    Dim_FXRates[CurrencyCode] = "EUR"
+)
+
+USD Rate =
+CALCULATE(
+    MAX(Dim_FXRates[RateToMXN]),
+    Dim_FXRates[CurrencyCode] = "USD"
+)
+```
+
+Then the conversion measures become trivial:
+
+```dax
+Patrimonio Total EUR = DIVIDE([Snapshot Último Mes], [EUR Rate])
+Patrimonio Total USD = DIVIDE([Snapshot Último Mes], [USD Rate])
+```
+
+Because `Dim_FXRates` has no relationship to the slicer tables, its values are never affected by category or currency filters — the rate is always available regardless of what the user has selected.
+
 ---
 
 ## Tax Handling
