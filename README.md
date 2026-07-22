@@ -1,8 +1,6 @@
 # Personal Investment Dashboard
 
-A multi-currency, multi-market investment tracker built with **Excel** (data model) and **Power BI** (dashboards). Designed to answer the questions that brokerage apps don't: 
-What is my total net worth today? How much passive income am I generating? 
-And are my stock losses really as bad as they look once you account for dividends and fixed income?
+A multi-currency, multi-market investment tracker built with **Excel** (data model) and **Power BI** (dashboards). Designed to answer the questions that brokerage apps don't: What is my total net worth today? How much passive income am I generating? And are my stock losses really as bad as they look once you account for dividends and fixed income?
 
 ---
 
