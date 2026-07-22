@@ -224,7 +224,7 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
    > Example: `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
 6. Click **Close & Apply** — the dashboard loads with the demo data
 
-### Option B — Build your own dashboard from scratch
+### Option B: Do you want to build yours? — Build your own dashboard from scratch
 
 1. Download `Investments_Template.xlsx` from the root of this repository
 2. Fill in your own transactions, dividends, and instruments — blue cells are yours to fill, green cells auto-calculate
@@ -244,7 +244,6 @@ The template is built around a Mexican broker (GBM) with MX and US markets. If y
 ## Project Structure
 
 ```
-├── README.md
 ├── Investments_Template.xlsx        # Blank template with formulas — fill with your own data
 ├── downloadable_demo/
 │   ├── Investments_Demo.xlsx        # Fictional data, ready to use with the .pbix
