@@ -209,37 +209,48 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 ## How to Use This
 
 ### Requirements
-- Microsoft Excel (to edit the data)
+- Microsoft Excel — to fill in your data
 - [Power BI Desktop](https://powerbi.microsoft.com/desktop/) (free)
 
-### Setup
-1. Download `Investments_Demo.xlsx` and the `.pbix` file
-2. Open the `.pbix` in Power BI Desktop
-3. Go to **Home → Transform data → Data source settings**
-4. Update the file path to point to your local copy of the Excel file
-5. Click **Refresh** — the dashboard will load with the demo data
+### Option A — Use the demo dashboard (quickest way to explore)
 
-### Adapting to your own data
-Replace the demo data in each Excel table with your own transactions. The key things to match:
-- Use the same column names (Power BI references them by name)
-- Keep the `AssetKey` format consistent (`TICKER_MARKET`, e.g. `AAPL_US`)
-- Update `Dim_Assets` with your actual holdings and their metadata
-- Update `Fact_CurrentPrices` regularly with current market prices
+1. Go to the [`downloadable_demo/`](downloadable_demo/) folder and download both files:
+   - `Investments_Demo.xlsx` — fictional data, same structure as the real workbook
+   - `Dashboard_Demo.pbix` — Power BI file pre-connected to the demo Excel
+2. Place both files in the **same folder** on your computer
+3. Open `Dashboard_Demo.pbix` in Power BI Desktop
+4. Go to **Home → Transform data → Manage Parameters**
+5. Update `ExcelPath` with the full path to `Investments_Demo.xlsx` on your machine
+   > Example: `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
+6. Click **Close & Apply** — the dashboard loads with the demo data
+
+### Option B — Build your own dashboard from scratch
+
+1. Download `Investments_Template.xlsx` from the root of this repository
+2. Fill in your own transactions, dividends, and instruments — blue cells are yours to fill, green cells auto-calculate
+3. Use the `⚡ Quick Entry` sheet to capture data fast (fewer fields, auto-fills the rest)
+4. Open `Dashboard_Demo.pbix`, update `ExcelPath` to point to your template file, and refresh
+5. The dashboard will load with your real data
+
+### Adapting the data model to your broker
+
+The template is built around a Mexican broker (GBM) with MX and US markets. If you use a different broker:
+- Adjust the commission formula in `Fact_Transactions` — currently `0.25%` of gross amount
+- Adjust the tax formula — currently `0.04%` for MX market transactions (ISR)
+- Update `Dim_FXRates` with the exchange rates relevant to your currencies
 
 ---
 
 ## Project Structure
 
 ```
-├── Investments_Demo.xlsx     # Demo data (fictional, same structure as real workbook)
-├── Dashboard.pbix            # Power BI file connected to the demo Excel
-├── backgrounds/              # PNG background images for each dashboard page (1280×720)
-│   ├── bg_patrimonio.png
-│   ├── bg_portafolio.png
-│   ├── bg_dividendos.png
-│   ├── bg_rentafija.png
-│   └── bg_diversificacion.png
-├── screenshots/              # Dashboard screenshots for this README
+├── README.md
+├── Investments_Template.xlsx        # Blank template with formulas — fill with your own data
+├── downloadable_demo/
+│   ├── Investments_Demo.xlsx        # Fictional data, ready to use with the .pbix
+│   └── Dashboard_Demo.pbix          # Power BI dashboard pre-connected to the demo Excel
+├── backgroundsEN/                   # PNG backgrounds for each dashboard page (1280×720, English)
+├── screenshots/                     # Dashboard screenshots
 └── README.md
 ```
 
