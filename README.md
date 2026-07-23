@@ -223,6 +223,7 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 5. Update `ExcelPath` with the full path to `Investments_Demo.xlsx` on your machine
    > Example: `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
 6. Click **Close & Apply** — the dashboard loads with the demo data
+![ExcelPath parameter](screenshots/excelpath.png)
 
 ### Option B: Do you want to build yours? — Build your own dashboard from scratch
 
@@ -231,6 +232,7 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 3. Use the `⚡ Quick Entry` sheet to capture data fast (fewer fields, auto-fills the rest)
 4. Open `Dashboard_Demo.pbix`, update `ExcelPath` to point to your template file, and refresh
 5. The dashboard will load with your real data
+![Quick Entry sheet](screenshots/quick_entry.png)
 
 ### Adapting the data model to your broker
 
@@ -265,9 +267,13 @@ This project is documented in detail on Medium:
 
 ## Notes
 
-- The demo file uses fictional tickers, amounts, and dates — the structure is identical to the real workbook but no real financial data is included
-- Fixed income instruments are modeled with explicit start/end dates and annual rates — digital savings accounts (daily interest, no fixed term) are handled by updating the balance monthly and marking the most recent record as Active
-- The Calendar table is generated dynamically from the minimum date across all fact tables, so it automatically extends as you add historical data
+- **Demo data**: `Investments_Demo.xlsx` uses fictional tickers, amounts, and dates — the structure is identical to the real workbook but no real financial data is included
+- **ExcelPath parameter**: when you first open `Dashboard_Demo.pbix`, Power BI will show a connection error until you update the `ExcelPath` parameter to point to the Excel file on your machine (see Option A, step 4-5)
+- **Quick Entry sheet**: the `Quick Entry` tab in both Excel files reduces data capture to 7-8 fields per transaction — the rest auto-calculate. Copy the yellow output row to `Fact_Transactions` or `Fact_Dividends` when done
+- **Fixed income**: instruments with a fixed term (SOFIPO, CETES) use explicit start/end dates and annual rates. Digital savings accounts (daily interest, no fixed term) are handled by updating the balance monthly and marking the most recent record as `Active`
+- **Calendar table**: generated dynamically in Power BI from the minimum date across all fact tables — it extends automatically as you add historical data. Create it in Power BI via **Modeling → New table** using the DAX formula in the README
+- **AssetKey format**: every asset needs a unique key in the format `TICKER_MARKET` (e.g. `VOO_US`, `WALMEX_MX`). This is what links transactions, dividends, and prices across tables
+- **Commission and tax logic**: currently set for GBM broker — `0.25%` commission and `0.04%` ISR for MX market transactions. Adjust the formulas in `Fact_Transactions` column `Commission_Local` and `Taxes_Local` if you use a different broker 
 
 ---
 
