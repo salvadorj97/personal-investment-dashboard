@@ -249,7 +249,8 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 3. Open `Dashboard_Demo.pbix` in Power BI Desktop
 4. Go to **Home → Transform data → Manage Parameters**
 5. Update `ExcelPath` with the full path to `Investments_Demo.xlsx` on your machine
-   > Example: `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
+   > Example: 
+   `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
 6. Click **Close & Apply**: the dashboard loads with the demo data
 ![ExcelPath parameter](screenshots/excelpath.png)
 
