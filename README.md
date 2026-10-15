@@ -261,7 +261,6 @@ The template is built around a Mexican broker (GBM) with MX and US markets. If y
 
 This project is documented in detail on Medium:
 **[How I Built a Personal Investment Dashboard with Excel, Power BI, and a Lot of DAX Headaches](#)**
-*(link to be added after publication)*
 
 ---
 
