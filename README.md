@@ -252,6 +252,7 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
    > Example: 
    `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
 6. Click **Close & Apply**: the dashboard loads with the demo data
+
 ![ExcelPath parameter](screenshots/excelpath.png)
 
 ### Option B: Build your own dashboard from scratch
