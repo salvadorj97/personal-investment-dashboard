@@ -6,7 +6,7 @@ A multi-currency, multi-market investment tracker built with **Excel** (data mod
 
 ## What This Project Does
 
-Most investors hold assets across multiple platforms, currencies, and instrument types — and most apps only show you one piece at a time. This dashboard consolidates everything into five pages:
+Most investors hold assets across multiple platforms, currencies, and instrument types, and most apps only show you one piece at a time. This dashboard consolidates everything into five pages:
 
 | Page | Question it answers |
 |---|---|
@@ -20,19 +20,19 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 
 ## Screenshots
 
-### Patrimonio — Total Net Worth
+### Patrimonio: Total Net Worth
 ![Patrimonio](screenshots/Patrimonio.png)
 
-### Portafolio — Stock Performance
+### Portafolio: Stock Performance
 ![Portafolio](screenshots/Portafolio.png)
 
-### Dividendos — Dividend Income
+### Dividendos: Dividend Income
 ![Dividendos](screenshots/Dividendos.png)
 
-### Renta Fija — Fixed Income
+### Renta Fija: Fixed Income
 ![Renta Fija](screenshots/RentaFija.png)
 
-### Diversificación — Portfolio Composition
+### Diversificación: Portfolio Composition
 ![Diversificacion](screenshots/Diversificacion.png)
 
 ### Data Model
@@ -45,17 +45,17 @@ Most investors hold assets across multiple platforms, currencies, and instrument
 The Excel workbook (`Investments_Demo.xlsx`) contains these tables:
 
 ```
-Fact_Transactions      — Every buy and sell, with price, FX rate, commissions, taxes
-Fact_Dividends         — Dividend income with gross amount, withholding tax, net received
-Fact_FixedIncome       — Fixed-rate instruments with start/end dates, principal, annual rate
-Fact_CurrentPrices     — Current market price for each active position
-Fact_PortfolioSnapshot — Monthly snapshot of total portfolio value by asset group
-Fact_FXTransactions    — Currency purchases (USD, EUR, etc.)
-Dim_Assets             — Asset metadata: sector, region, risk level, dividend frequency
-Dim_FXRates            — Historical exchange rates by month
+Fact_Transactions      : Every buy and sell, with price, FX rate, commissions, taxes
+Fact_Dividends         : Dividend income with gross amount, withholding tax, net received
+Fact_FixedIncome       : Fixed-rate instruments with start/end dates, principal, annual rate
+Fact_CurrentPrices     : Current market price for each active position
+Fact_PortfolioSnapshot : Monthly snapshot of total portfolio value by asset group
+Fact_FXTransactions    : Currency purchases (USD, EUR, etc.)
+Dim_Assets             : Asset metadata (sector, region, risk level, dividend frequency)
+Dim_FXRates            : Historical exchange rates by month
 ```
 
-Each transaction stores the FX rate at the time of the operation, so the cost basis in MXN is always historically accurate — not recalculated at today's rate.
+Each transaction stores the FX rate at the time of the operation, so the cost basis in MXN is always historically accurate, not recalculated at today's rate.
 
 ---
 
@@ -83,7 +83,7 @@ SUMX(
 )
 ```
 
-### Historical fixed income — ALLSELECTED vs ALL
+### Historical fixed income: ALLSELECTED vs ALL
 To show estimated monthly income across all historical periods while still respecting slicer selections:
 
 ```dax
@@ -98,10 +98,10 @@ SUMX(
 )
 ```
 
-`ALLSELECTED` removes automatic context filters but keeps slicer selections — so the chart shows the full date range while still responding to the instrument filter.
+`ALLSELECTED` removes automatic context filters but keeps slicer selections, so the chart shows the full date range while still responding to the instrument filter.
 
 ### Separating realized vs unrealized P&L
-Active positions use current market price. Closed positions use the actual sale price:
+This second version of the measure replaces the first one: active positions use the current market price, closed positions use the actual sale price.
 
 ```dax
 Valor Actual MXN =
@@ -133,18 +133,26 @@ SUMX(
 
 ---
 
+## Calendar Table
+
+Built in **Power Query**, starting from the earliest date across the fact tables, so it extends automatically as you add historical data. Columns: `Date`, `Day`, `Month`, `MonthNumber`, `Quarter`, `Year`, `YearMonth`.
+
+To see or reuse the code: **Home → Transform data**, select the `Calendar` query, then **Advanced Editor**.
+
+---
+
 ## Multi-Currency Design
 
 This dashboard tracks assets in MXN, USD, EUR, and GBP. The approach:
 
 - Every transaction stores the FX rate at the time of purchase (`FXRate_to_MXN`)
-- Cost basis in MXN reflects historical rates — not today's
-- The Patrimonio page shows totals in MXN, USD, and EUR using the most recent rate from `Fact_PortfolioSnapshot`
-- Some ETFs trade on both the Mexican market (MXN) and US market (USD) as separate positions — handled with an `AssetKey` column that uniquely identifies each combination (e.g., `VOO_MX` vs `VOO_US`)
+- Cost basis in MXN reflects historical rates, not today's
+- The Patrimonio page shows totals in MXN, USD, and EUR using the most recent rate available in `Dim_FXRates`
+- Some ETFs trade on both the Mexican market (MXN) and US market (USD) as separate positions, handled with an `AssetKey` column that uniquely identifies each combination (e.g., `VOO_MX` vs `VOO_US`)
 
 ### Converting totals to USD and EUR
 
-A card showing the total net worth in USD or EUR sounds simple — but it breaks the moment a slicer filters out assets denominated in those currencies. If no EUR asset is in the current view, the measure can't find an EUR exchange rate and returns blank.
+A card showing the total net worth in USD or EUR sounds simple, but it breaks the moment a slicer filters out assets denominated in those currencies. If no EUR asset is in the current view, the measure can't find an EUR exchange rate and returns blank.
 
 The first attempt used `ALL()` and `CALCULATE` to force the rate lookup:
 
@@ -169,17 +177,37 @@ RETURN DIVIDE([Snapshot Último Mes], fx)
 The cleaner solution was to store the exchange rate lookup as a simple measure in `Dim_FXRates`, which sits completely outside the slicer context:
 
 ```dax
--- ✅ In Dim_FXRates — always finds the rate regardless of active filters
+-- ✅ In Dim_FXRates: always finds the most recent rate, regardless of active filters
 EUR Rate =
-CALCULATE(
-    MAX(Dim_FXRates[RateToMXN]),
-    Dim_FXRates[CurrencyCode] = "EUR"
-)
+VAR ultimaFecha =
+    CALCULATE(MAX(Dim_FXRates[FXDate]), Dim_FXRates[CurrencyCode] = "EUR")
+RETURN
+    CALCULATE(
+        MAX(Dim_FXRates[RateToMXN]),
+        Dim_FXRates[CurrencyCode] = "EUR",
+        Dim_FXRates[FXDate] = ultimaFecha
+    )
 
 USD Rate =
+VAR ultimaFecha =
+    CALCULATE(MAX(Dim_FXRates[FXDate]), Dim_FXRates[CurrencyCode] = "USD")
+RETURN
+    CALCULATE(
+        MAX(Dim_FXRates[RateToMXN]),
+        Dim_FXRates[CurrencyCode] = "USD",
+        Dim_FXRates[FXDate] = ultimaFecha
+    )
+```
+
+`Dim_FXRates` stores one rate per month, so the measure first finds the latest month for that currency and then returns its rate. A plain `MAX` on the rate column would return the highest rate ever recorded, not the current one.
+
+The total in MXN comes from the latest monthly snapshot visible in the current filter context:
+
+```dax
+Snapshot Último Mes =
 CALCULATE(
-    MAX(Dim_FXRates[RateToMXN]),
-    Dim_FXRates[CurrencyCode] = "USD"
+    SUM(Fact_PortfolioSnapshot[Value_MXN]),
+    Fact_PortfolioSnapshot[SnapshotDate] = MAX(Fact_PortfolioSnapshot[SnapshotDate])
 )
 ```
 
@@ -190,7 +218,7 @@ Patrimonio Total EUR = DIVIDE([Snapshot Último Mes], [EUR Rate])
 Patrimonio Total USD = DIVIDE([Snapshot Último Mes], [USD Rate])
 ```
 
-Because `Dim_FXRates` has no relationship to the slicer tables, its values are never affected by category or currency filters — the rate is always available regardless of what the user has selected.
+Because `Dim_FXRates` has no relationship to the slicer tables, its values are never affected by category or currency filters: the rate is always available regardless of what the user has selected.
 
 ---
 
@@ -200,7 +228,7 @@ The model tracks two types of withholding:
 
 - **Mexican stocks (ISR)**: 10% retained on gross dividend
 - **Foreign ETFs via SIC (W-8BEN)**: 10% US withholding on dividends (reduced from 30% with a W-8BEN form on file)
-- **FIBRAs** (Mexican REITs): effective rate varies per distribution — must be derived from actual broker figures, as each quarterly payment is split across taxable income, return of capital, etc.
+- **FIBRAs** (Mexican REITs): effective rate varies per distribution; it must be derived from actual broker figures, as each quarterly payment is split across taxable income, return of capital, etc.
 
 Withholding is stored at the transaction level in `Fact_Dividends`, so the dashboard always shows both gross and net dividend income.
 
@@ -209,26 +237,26 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 ## How to Use This
 
 ### Requirements
-- Microsoft Excel — to fill in your data
+- Microsoft Excel: to fill in your data
 - [Power BI Desktop](https://powerbi.microsoft.com/desktop/) (free)
 
-### Option A — Use the demo dashboard (quickest way to explore)
+### Option A: Use the demo dashboard (quickest way to explore)
 
 1. Go to the [`downloadable_demo/`](downloadable_demo/) folder and download both files:
-   - `Investments_Demo.xlsx` — fictional data, same structure as the real workbook
-   - `Dashboard_Demo.pbix` — Power BI file pre-connected to the demo Excel
+   - `Investments_Demo.xlsx`: fictional data, same structure as the real workbook
+   - `Dashboard_Demo.pbix`: Power BI file pre-connected to the demo Excel
 2. Place both files in the **same folder** on your computer
 3. Open `Dashboard_Demo.pbix` in Power BI Desktop
 4. Go to **Home → Transform data → Manage Parameters**
 5. Update `ExcelPath` with the full path to `Investments_Demo.xlsx` on your machine
    > Example: `C:\Users\YourName\Downloads\personal-investment-dashboard\Investments_Demo.xlsx`
-6. Click **Close & Apply** — the dashboard loads with the demo data
+6. Click **Close & Apply**: the dashboard loads with the demo data
 ![ExcelPath parameter](screenshots/excelpath.png)
 
-### Option B: Do you want to build yours? — Build your own dashboard from scratch
+### Option B: Build your own dashboard from scratch
 
 1. Download `Investments_Template.xlsx` from the root of this repository
-2. Fill in your own transactions, dividends, and instruments — blue cells are yours to fill, green cells auto-calculate
+2. Fill in your own transactions, dividends, and instruments. Blue cells are yours to fill, green cells auto-calculate
 3. Use the `⚡ Quick Entry` sheet to capture data fast (fewer fields, auto-fills the rest)
 4. Open `Dashboard_Demo.pbix`, update `ExcelPath` to point to your template file, and refresh
 5. The dashboard will load with your real data
@@ -237,8 +265,8 @@ Withholding is stored at the transaction level in `Fact_Dividends`, so the dashb
 ### Adapting the data model to your broker
 
 The template is built around a Mexican broker (GBM) with MX and US markets. If you use a different broker:
-- Adjust the commission formula in `Fact_Transactions` — currently `0.25%` of gross amount
-- Adjust the tax formula — currently `0.04%` for MX market transactions (ISR)
+- Adjust the commission formula in `Fact_Transactions`, currently `0.25%` of gross amount
+- Adjust the tax formula, currently `0.04%` for MX market transactions (ISR)
 - Update `Dim_FXRates` with the exchange rates relevant to your currencies
 
 ---
@@ -246,7 +274,7 @@ The template is built around a Mexican broker (GBM) with MX and US markets. If y
 ## Project Structure
 
 ```
-├── Investments_Template.xlsx        # Blank template with formulas — fill with your own data
+├── Investments_Template.xlsx        # Blank template with formulas, fill with your own data
 ├── downloadable_demo/
 │   ├── Investments_Demo.xlsx        # Fictional data, ready to use with the .pbix
 │   └── Dashboard_Demo.pbix          # Power BI dashboard pre-connected to the demo Excel
@@ -260,24 +288,24 @@ The template is built around a Mexican broker (GBM) with MX and US markets. If y
 ## Related Article
 
 This project is documented in detail on Medium:
-**[How I Built a Personal Investment Dashboard with Excel, Power BI, and a Lot of DAX Headaches](#)**
+**[Building a Multi-Currency Investment Dashboard in Power BI](https://medium.com/the-investors-handbook/building-a-multi-currency-investment-dashboard-in-power-bi-data-model-dax-patterns-and-the-56fad0d0ec5c?sk=6e911faa97cda59325baef50fb67bec2)**
 
 ---
 
 ## Notes
 
-- **Demo data**: `Investments_Demo.xlsx` uses fictional tickers, amounts, and dates — the structure is identical to the real workbook but no real financial data is included
+- **Demo data**: `Investments_Demo.xlsx` uses fictional tickers, amounts, and dates. The structure is identical to the real workbook but no real financial data is included
 - **ExcelPath parameter**: when you first open `Dashboard_Demo.pbix`, Power BI will show a connection error until you update the `ExcelPath` parameter to point to the Excel file on your machine (see Option A, step 4-5)
-- **Quick Entry sheet**: the `Quick Entry` tab in both Excel files reduces data capture to 7-8 fields per transaction — the rest auto-calculate. Copy the yellow output row to `Fact_Transactions` or `Fact_Dividends` when done
+- **Quick Entry sheet**: the `Quick Entry` tab in both Excel files reduces data capture to 7-8 fields per transaction; the rest auto-calculate. Copy the yellow output row to `Fact_Transactions` or `Fact_Dividends` when done
 - **Fixed income**: instruments with a fixed term (SOFIPO, CETES) use explicit start/end dates and annual rates. Digital savings accounts (daily interest, no fixed term) are handled by updating the balance monthly and marking the most recent record as `Active`
-- **Calendar table**: generated dynamically in Power BI from the minimum date across all fact tables — it extends automatically as you add historical data. Create it in Power BI via **Modeling → New table** using the DAX formula in the README
-- **AssetKey format**: every asset needs a unique key in the format `TICKER_MARKET` (e.g. `VOO_US`, `WALMEX_MX`). This is what links transactions, dividends, and prices across tables
-- **Commission and tax logic**: currently set for GBM broker — `0.25%` commission and `0.04%` ISR for MX market transactions. Adjust the formulas in `Fact_Transactions` column `Commission_Local` and `Taxes_Local` if you use a different broker 
+- **Calendar table**: generated dynamically in Power BI from the minimum date across all fact tables, and it extends automatically as you add historical data. It is built in Power Query (see the Calendar Table section above)
+- **AssetKey format**: every asset needs a unique key in the format `TICKER_MARKET` (e.g. `VOO_US`, `WALMEX_MX`). This is what links transactions, dividends, and prices across tables. The DAX examples above use `AssetName` for readability; in the model, `AssetKey` is the join column
+- **Commission and tax logic**: currently set for GBM broker: `0.25%` commission and `0.04%` ISR for MX market transactions. Adjust the formulas in `Fact_Transactions` column `Commission_Local` and `Taxes_Local` if you use a different broker 
 
 ---
 
 ## Author
 
 **Salvador Jiménez-Juárez**
-Mastrère Spécialisé – Digital Strategy Management, Grenoble École de Management (2025)
-[LinkedIn](https://linkedin.com/in/salvador-jimenez97mx) · [Medium](https://medium.com/@salvador.jimenez-juarez) · Feel free to open an issue if you have questions about the data model or DAX measures*
+Mastère Spécialisé in Digital Strategy Management, Grenoble École de Management (2026)
+[LinkedIn](https://linkedin.com/in/salvador-jimenez97mx) · [Medium](https://medium.com/@salvador.jimenez-juarez) · Feel free to open an issue if you have questions about the data model or DAX measures
